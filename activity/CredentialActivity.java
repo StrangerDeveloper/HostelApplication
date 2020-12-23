@@ -1,6 +1,5 @@
 package com.example.hostelrecommendationsystem.activity;
 
-import android.app.Fragment;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
@@ -15,7 +14,6 @@ import com.example.hostelrecommendationsystem.utils.UtilClass;
 
 public class CredentialActivity extends AppCompatActivity implements View.OnClickListener {
 
-    Fragment fragment;
     Button btnAdmin, btnUser;
     private String btnText;
     private ConstraintLayout loginOptionLayout;

@@ -11,6 +11,14 @@ import androidx.fragment.app.FragmentTransaction;
 
 public class UtilClass {
 
+    /*
+    * in this utilclass i create it for comman methods used in the app for less
+    * code.
+    * loadfragment method is used for loading different methods.
+    * checkpermission method is for checking that the user give access to the
+    * app for accessing camera, gallery and external storage.
+    */
+
     public static void loadFragment(Fragment fragment, AppCompatActivity appCompatActivity, int container) {
         FragmentTransaction transaction = appCompatActivity.getSupportFragmentManager()
                 .beginTransaction()

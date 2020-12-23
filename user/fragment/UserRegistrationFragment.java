@@ -23,6 +23,9 @@ import com.example.hostelrecommendationsystem.fragment.LoginFragment;
 import com.example.hostelrecommendationsystem.user.model.UserResponse;
 import com.example.hostelrecommendationsystem.utils.AppConstant;
 import com.example.hostelrecommendationsystem.utils.UtilClass;
+import com.google.android.gms.location.FusedLocationProviderClient;
+import com.google.android.gms.location.LocationRequest;
+import com.google.android.gms.location.LocationServices;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DatabaseReference;
@@ -51,6 +54,12 @@ public class UserRegistrationFragment extends Fragment {
     private AppCompatActivity mActivity;
     private Uri imageUri;
     private UploadTask mUploadTask;
+
+    /* for location */
+    FusedLocationProviderClient fusedLocationProviderClient;
+
+    /* latitude, longitude */
+    protected double latitude, longitude;
 
     public UserRegistrationFragment() {
 
@@ -156,6 +165,9 @@ public class UserRegistrationFragment extends Fragment {
     }
 
     private void registerUserToFirebase(Uri uri) {
+
+        fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(mActivity);
+        LocationRequest mLocationRequest = new LocationRequest();
 
         String name = userName.getText().toString();
         String email = userEmail.getText().toString();
