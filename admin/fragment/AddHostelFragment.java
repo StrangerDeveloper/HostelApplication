@@ -1,7 +1,9 @@
 package com.example.hostelrecommendationsystem.admin.fragment;
 
+import android.Manifest;
 import android.app.Activity;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
@@ -12,12 +14,12 @@ import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
 import android.widget.ImageView;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
 import androidx.fragment.app.Fragment;
 
 import com.bumptech.glide.Glide;
@@ -33,12 +35,6 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
-import com.vanillaplacepicker.data.VanillaAddress;
-import com.vanillaplacepicker.presentation.builder.VanillaPlacePicker;
-import com.vanillaplacepicker.utils.KeyUtils;
-import com.vanillaplacepicker.utils.MapType;
-import com.vanillaplacepicker.utils.PickerLanguage;
-import com.vanillaplacepicker.utils.PickerType;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -71,13 +67,13 @@ public class AddHostelFragment extends Fragment implements CompoundButton.OnChec
     }
 
     private AppCompatActivity mActivity;
-    private TextView txtLocationPicker;
+    private Button txtLocationPicker;
     private TextInputEditText etName, etHostelPhone, etHostelRooms, etPerRoomPrice;
     private TextInputLayout inputLayoutName, inputLayoutPhone, inputLayoutHostelRooms, inputLayoutPerRoomPrice;
 
     private Button btnAddHostel;
     private ImageView imgHostel;
-    private VanillaAddress mHostelPickedAddress;
+   // private VanillaAddress mHostelPickedAddress;
 
     private InputValidator mInputValidator;
 
@@ -86,46 +82,46 @@ public class AddHostelFragment extends Fragment implements CompoundButton.OnChec
         super.onViewCreated(view, savedInstanceState);
         mActivity = (AppCompatActivity) getActivity();
 
-        initViews();
+        initViews(view);
         onViewsClick();
     }
 
 
-    private void initViews() {
+    private void initViews(View view) {
 
         roomTypeList = new ArrayList<>();
         facilitiesList = new ArrayList<>();
 
-        btnAddHostel = mActivity.findViewById(R.id.btn_add_hostel);
-        imgHostel = mActivity.findViewById(R.id.img_add_hostel);
-        txtLocationPicker = mActivity.findViewById(R.id.txt_pick_up_location_address);
+        btnAddHostel = view.findViewById(R.id.btn_add_hostel);
+        imgHostel = view.findViewById(R.id.img_add_hostel);
+        txtLocationPicker = view.findViewById(R.id.txt_pick_up_location_address);
 
-        etName = mActivity.findViewById(R.id.et_name);
-        etHostelPhone = mActivity.findViewById(R.id.et_phone);
-        etHostelRooms = mActivity.findViewById(R.id.et_rooms);
-        etPerRoomPrice = mActivity.findViewById(R.id.et_price);
+        etName = view.findViewById(R.id.et_name);
+        etHostelPhone = view.findViewById(R.id.et_phone);
+        etHostelRooms = view.findViewById(R.id.et_rooms);
+        etPerRoomPrice = view.findViewById(R.id.et_price);
 
-        inputLayoutHostelRooms = mActivity.findViewById(R.id.text_input_layout_rooms);
-        inputLayoutName = mActivity.findViewById(R.id.text_input_layout_name);
-        inputLayoutPhone = mActivity.findViewById(R.id.text_input_layout_phone);
-        inputLayoutPerRoomPrice = mActivity.findViewById(R.id.text_input_layout_price);
+        inputLayoutHostelRooms = view.findViewById(R.id.text_input_layout_rooms);
+        inputLayoutName = view.findViewById(R.id.text_input_layout_name);
+        inputLayoutPhone = view.findViewById(R.id.text_input_layout_phone);
+        inputLayoutPerRoomPrice = view.findViewById(R.id.text_input_layout_price);
 
-        CheckBox chbSingleSeater = mActivity.findViewById(R.id.checkBox_single);
-        CheckBox chbDoubleSeater = mActivity.findViewById(R.id.checkBox_double);
-        CheckBox chbTripleSeater = mActivity.findViewById(R.id.checkBox_triple);
-        CheckBox chbTetraSeater = mActivity.findViewById(R.id.checkBox_tetra);
+        CheckBox chbSingleSeater = view.findViewById(R.id.checkBox_single);
+        CheckBox chbDoubleSeater = view.findViewById(R.id.checkBox_double);
+        CheckBox chbTripleSeater = view.findViewById(R.id.checkBox_triple);
+        CheckBox chbTetraSeater = view.findViewById(R.id.checkBox_tetra);
 
         chbSingleSeater.setOnCheckedChangeListener(this::onCheckedChanged);
         chbDoubleSeater.setOnCheckedChangeListener(this::onCheckedChanged);
         chbTripleSeater.setOnCheckedChangeListener(this::onCheckedChanged);
         chbTetraSeater.setOnCheckedChangeListener(this::onCheckedChanged);
 
-        CheckBox chbGas = mActivity.findViewById(R.id.checkBox_gas);
-        CheckBox chbWifi = mActivity.findViewById(R.id.checkBox_wifi);
-        CheckBox chbElectricity = mActivity.findViewById(R.id.checkBox_electricity);
-        CheckBox chbWarmWater = mActivity.findViewById(R.id.checkBox_hot_water);
-        CheckBox chbFilterWater = mActivity.findViewById(R.id.checkBox_filter_water);
-        CheckBox chbHasMess = mActivity.findViewById(R.id.checkBox_has_mess);
+        CheckBox chbGas = view.findViewById(R.id.checkBox_gas);
+        CheckBox chbWifi = view.findViewById(R.id.checkBox_wifi);
+        CheckBox chbElectricity = view.findViewById(R.id.checkBox_electricity);
+        CheckBox chbWarmWater = view.findViewById(R.id.checkBox_hot_water);
+        CheckBox chbFilterWater = view.findViewById(R.id.checkBox_filter_water);
+        CheckBox chbHasMess = view.findViewById(R.id.checkBox_has_mess);
 
 
         chbGas.setOnCheckedChangeListener(this::onCheckedChanged);
@@ -176,32 +172,35 @@ public class AddHostelFragment extends Fragment implements CompoundButton.OnChec
         imagesUrlList = new ArrayList<>();
         mInputValidator = new InputValidator(mActivity);
 
-        imgHostel.setOnClickListener(v -> {
-            TedBottomPicker.with(mActivity)
-                    .setPeekHeight(mActivity.getResources().getDisplayMetrics().heightPixels / 2)
-                    .showTitle(true)
-                    .setCompleteButtonText("Done")
-                    .setEmptySelectionText("No Select")
-                    .setSelectedUriList(mSelectedUriList)
-                    .showMultiImage(uriList -> {
-                        // here is selected image uri list
-                        mSelectedUriList.addAll(uriList);
-                        Glide.with(mActivity).load(uriList.get(0)).into(imgHostel);
+        if (checkPermissions()) {
+            imgHostel.setOnClickListener(v -> {
+                TedBottomPicker.with(mActivity)
+                        .setPeekHeight(mActivity.getResources().getDisplayMetrics().heightPixels / 2)
+                        .showTitle(true)
+                        .setCompleteButtonText("Done")
+                        .setEmptySelectionText("No Select")
+                        .setSelectedUriList(mSelectedUriList)
+                        .showMultiImage(uriList -> {
+                            // here is selected image uri list
+                            mSelectedUriList.addAll(uriList);
+                            Glide.with(mActivity).load(uriList.get(0)).into(imgHostel);
 
-                    });
-        });
-        txtLocationPicker.setOnClickListener(v -> {
+                        });
+            });
+        }
+
+        /*txtLocationPicker.setOnClickListener(v -> {
             Intent intent = new VanillaPlacePicker.Builder(mActivity)
                     .with(PickerType.MAP_WITH_AUTO_COMPLETE) // Select Picker type to enable autocompelte, map or both
-                    .isOpenNow(true)
+                    .setLocationRestriction(new LatLng(34.124487, 73.190961), new LatLng(34.228272, 73.245651 )) // Restrict location bounds in map and autocomplete
                     //.withLocation(riderCurrentLocation.getLatitude(), riderCurrentLocation.getLongitude())
-                    .setPickerLanguage(PickerLanguage.ENGLISH) // Apply language to picker
+                    //.setPickerLanguage(PickerLanguage.ENGLISH) // Apply language to picker
                     // .enableShowMapAfterSearchResult(true) // To show the map after selecting the
                     // place from place picker only for PickerType.MAP_WITH_AUTO_COMPLETE
 
-                    /*
+                    *//*
                      * Configuration for Map UI
-                     */
+                     *//*
                     .setMapType(MapType.NORMAL) // Choose map type (Only applicable for map screen)
                     //.setMapStyle(R.raw.style_json) // Containing the JSON style declaration for night-mode styling
                     .setMapPinDrawable(android.R.drawable.ic_menu_mylocation) // To give custom pin image for map marker
@@ -209,7 +208,7 @@ public class AddHostelFragment extends Fragment implements CompoundButton.OnChec
                     .build();
 
             startActivityForResult(intent, REQUEST_PLACE_PICKER);
-        });
+        });*/
 
         btnAddHostel.setOnClickListener(view -> {
             /* validation goes here */
@@ -224,10 +223,10 @@ public class AddHostelFragment extends Fragment implements CompoundButton.OnChec
                         uploadImagesToStorage();
 
                         if (Objects.equals(imagesUrlList.size(), mSelectedUriList.size())) {
-                            if (mHostelPickedAddress != null)
+                           // if (mHostelPickedAddress != null)
                                 addHostelToDb();
-                            else
-                                Toast.makeText(mActivity, "Plz pickup address first", Toast.LENGTH_SHORT).show();
+                           /* else
+                                Toast.makeText(mActivity, "Plz pickup address first", Toast.LENGTH_SHORT).show();*/
                         } else {
                             Log.d(TAG, "list size is not equal: " + imagesUrlList.size() + " selectedList" + mSelectedUriList.size());
                         }
@@ -239,6 +238,26 @@ public class AddHostelFragment extends Fragment implements CompoundButton.OnChec
             }
 
         });
+    }
+
+    private boolean checkPermissions() {
+        if (ActivityCompat.checkSelfPermission(mActivity, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED
+                && ActivityCompat.checkSelfPermission(mActivity, Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
+            Toast.makeText(mActivity, "Allow Permissions", Toast.LENGTH_LONG).show();
+            ActivityCompat.requestPermissions(mActivity, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.CAMERA}, 0);
+            return false;
+        }
+
+        return true;
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+            Log.v(TAG, "Permission: " + permissions[0] + "was " + grantResults[0]);
+            //resume tasks needing this permission
+        }
     }
 
     private void uploadImagesToStorage() {
@@ -285,7 +304,7 @@ public class AddHostelFragment extends Fragment implements CompoundButton.OnChec
         DatabaseReference dbRef = FirebaseDatabase.getInstance().getReference(AppConstant.HOSTEL);
         String firebaseUID = dbRef.push().getKey();
 
-        Hostel hostel = new Hostel(firebaseUID,
+      /*  Hostel hostel = new Hostel(firebaseUID,
                 etName.getText().toString().trim(),
                 mHostelPickedAddress.getFormattedAddress(),
                 mHostelPickedAddress.getLocality(),
@@ -301,7 +320,7 @@ public class AddHostelFragment extends Fragment implements CompoundButton.OnChec
             if (task.isSuccessful()) {
                 Toast.makeText(mActivity, "Hostel is added!", Toast.LENGTH_SHORT).show();
             }
-        });
+        });*/
     }
 
     @Override
@@ -309,7 +328,7 @@ public class AddHostelFragment extends Fragment implements CompoundButton.OnChec
         super.onActivityResult(requestCode, resultCode, data);
         if (resultCode == Activity.RESULT_OK && data != null) {
             if (requestCode == REQUEST_PLACE_PICKER) {
-                mHostelPickedAddress = (VanillaAddress) data.getSerializableExtra(KeyUtils.SELECTED_PLACE);
+                //mHostelPickedAddress = (VanillaAddress) data.getSerializableExtra(KeyUtils.SELECTED_PLACE);
             }
         }
     }

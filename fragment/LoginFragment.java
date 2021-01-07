@@ -144,7 +144,7 @@ public class LoginFragment extends Fragment {
                     if (Objects.equals(snap.child("email").getValue(), email)
                             && Objects.equals(snap.child("password").getValue(), password)) {
                         UserResponse userResponse = snap.getValue(UserResponse.class);
-                        navigateToActivity(UserHomeActivity.class);
+                      //  navigateToActivity(UserHomeActivity.class);
 
                         if (userResponse != null) {
                             SharedPrefHelper.getmHelper().setUserResponse(new Gson().toJson(userResponse));
@@ -175,7 +175,7 @@ public class LoginFragment extends Fragment {
                     if (Objects.equals(snap.child("email").getValue(), email)
                             && Objects.equals(snap.child("password").getValue(), password)) {
                         AdminResponse adminResponse = snap.getValue(AdminResponse.class);
-                        navigateToActivity(UserHomeActivity.class);
+//                        navigateToActivity(AdminHomeActivity.class);
 
                         if (adminResponse != null) {
                             SharedPrefHelper.getmHelper().setUserResponse(new Gson().toJson(adminResponse));
