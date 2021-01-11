@@ -57,6 +57,8 @@ public class UserHomeActivity extends AppCompatActivity implements OnMapReadyCal
         mapFragment.getMapAsync(this);
         initView();
 
+        //by default only for abbottbad city
+        getHostelByCity("Abbottabad");
         mLocationUpdate = LocationUpdate.getInstance(this);
         mLocationUpdate.onCreate(savedInstanceState);
 

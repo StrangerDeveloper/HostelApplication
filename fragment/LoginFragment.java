@@ -113,9 +113,9 @@ public class LoginFragment extends Fragment {
         } else {
             dialog = new ProgressDialog(mActivity);
             //dialog.setMessage("Logging . . . \n Please Wait ");
-            dialog.setCancelable(false);
+            //dialog.setCancelable(false);
             dialog.setTitle("Authenticating!");
-            dialog.setCanceledOnTouchOutside(false);
+            //dialog.setCanceledOnTouchOutside(false);
             dialog.show();
             auth.signInWithEmailAndPassword(email, password)
                     .addOnCompleteListener(task -> {

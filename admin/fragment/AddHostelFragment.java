@@ -2,8 +2,11 @@ package com.example.hostelrecommendationsystem.admin.fragment;
 
 import android.Manifest;
 import android.app.Activity;
+import android.app.ProgressDialog;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.location.Address;
+import android.location.Geocoder;
 import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
@@ -14,6 +17,7 @@ import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
 import android.widget.ImageView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -27,6 +31,7 @@ import com.example.hostelrecommendationsystem.R;
 import com.example.hostelrecommendationsystem.admin.model.Hostel;
 import com.example.hostelrecommendationsystem.utils.AppConstant;
 import com.example.hostelrecommendationsystem.utils.InputValidator;
+import com.example.hostelrecommendationsystem.utils.UtilClass;
 import com.google.android.gms.tasks.Task;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
@@ -35,11 +40,16 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
+import com.sucho.placepicker.AddressData;
+import com.sucho.placepicker.Constants;
+import com.sucho.placepicker.MapType;
+import com.sucho.placepicker.PlacePicker;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
+import java.util.Locale;
 
 import gun0912.tedbottompicker.TedBottomPicker;
 
@@ -67,7 +77,7 @@ public class AddHostelFragment extends Fragment implements CompoundButton.OnChec
     }
 
     private AppCompatActivity mActivity;
-    private Button txtLocationPicker;
+    private TextView txtLocationPicker;
     private TextInputEditText etName, etHostelPhone, etHostelRooms, etPerRoomPrice;
     private TextInputLayout inputLayoutName, inputLayoutPhone, inputLayoutHostelRooms, inputLayoutPerRoomPrice;
 
@@ -188,27 +198,29 @@ public class AddHostelFragment extends Fragment implements CompoundButton.OnChec
                         });
             });
         }
+        txtLocationPicker.setOnClickListener(v -> {
+            Intent intent = new PlacePicker.IntentBuilder()
+                    .setLatLong(34.14685, 73.21449)  // Initial Latitude and Longitude the Map will load into
+                    .showLatLong(true)  // Show Coordinates in the Activity
+                    .setMapZoom(13.0f)  // Map Zoom Level. Default: 14.0
+                    .setAddressRequired(true) // Set If return only Coordinates if cannot fetch Address for the coordinates. Default: True
+                    .hideMarkerShadow(true) // Hides the shadow under the map marker. Default: False
+                    //.setMarkerDrawable(R.drawable.marker) // Change the default Marker Image
+                    .setMarkerImageImageColor(R.color.colorPrimary)
+                    .setFabColor(R.color.colorPrimaryDark)
+                    .setPrimaryTextColor(R.color.colorWhite) // Change text color of Shortened Address
+                    .setSecondaryTextColor(R.color.colorBlack) // Change text color of full Address
+                    .setBottomViewColor(R.color.colorPrimary) // Change Address View Background Color (Default: White)
+                    // .setMapRawResourceStyle(R.raw.map_style)  //Set Map Style (https://mapstyle.withgoogle.com/)
+                    .setMapType(MapType.NORMAL)
+                    .setPlaceSearchBar(true, getString(R.string.map_api_key)) //Activate GooglePlace Search Bar. Default is false/not activated. SearchBar is a chargeable feature by Google
+                    .onlyCoordinates(true)  //Get only Coordinates from Place Picker
+                    .hideLocationButton(true)   //Hide Location Button (Default: false)
+                    .disableMarkerAnimation(true)   //Disable Marker Animation (Default: false)
+                    .build(mActivity);
 
-        /*txtLocationPicker.setOnClickListener(v -> {
-            Intent intent = new VanillaPlacePicker.Builder(mActivity)
-                    .with(PickerType.MAP_WITH_AUTO_COMPLETE) // Select Picker type to enable autocompelte, map or both
-                    .setLocationRestriction(new LatLng(34.124487, 73.190961), new LatLng(34.228272, 73.245651 )) // Restrict location bounds in map and autocomplete
-                    //.withLocation(riderCurrentLocation.getLatitude(), riderCurrentLocation.getLongitude())
-                    //.setPickerLanguage(PickerLanguage.ENGLISH) // Apply language to picker
-                    // .enableShowMapAfterSearchResult(true) // To show the map after selecting the
-                    // place from place picker only for PickerType.MAP_WITH_AUTO_COMPLETE
-
-                    *//*
-                     * Configuration for Map UI
-                     *//*
-                    .setMapType(MapType.NORMAL) // Choose map type (Only applicable for map screen)
-                    //.setMapStyle(R.raw.style_json) // Containing the JSON style declaration for night-mode styling
-                    .setMapPinDrawable(android.R.drawable.ic_menu_mylocation) // To give custom pin image for map marker
-
-                    .build();
-
-            startActivityForResult(intent, REQUEST_PLACE_PICKER);
-        });*/
+            startActivityForResult(intent, Constants.PLACE_PICKER_REQUEST);
+        });
 
         btnAddHostel.setOnClickListener(view -> {
             /* validation goes here */
@@ -220,16 +232,10 @@ public class AddHostelFragment extends Fragment implements CompoundButton.OnChec
                     Toast.makeText(mActivity, "uploads is in progress....", Toast.LENGTH_SHORT).show();
                 } else {
                     if (mSelectedUriList.size() > 0) {
-                        uploadImagesToStorage();
-
-                        if (Objects.equals(imagesUrlList.size(), mSelectedUriList.size())) {
-                           // if (mHostelPickedAddress != null)
-                                addHostelToDb();
-                           /* else
-                                Toast.makeText(mActivity, "Plz pickup address first", Toast.LENGTH_SHORT).show();*/
-                        } else {
-                            Log.d(TAG, "list size is not equal: " + imagesUrlList.size() + " selectedList" + mSelectedUriList.size());
-                        }
+                        if (mHostelPickedAddress != null)
+                            uploadImagesToStorage();
+                        else
+                            Toast.makeText(mActivity, "Plz choose Address First!", Toast.LENGTH_SHORT).show();
 
                     } else {
                         Toast.makeText(mActivity, "Plz select at least one image!", Toast.LENGTH_SHORT).show();
@@ -261,23 +267,40 @@ public class AddHostelFragment extends Fragment implements CompoundButton.OnChec
     }
 
     private void uploadImagesToStorage() {
-        imagesUploadRef = FirebaseStorage.getInstance().getReference("Images");
+        final ProgressDialog progressDialog = new ProgressDialog(mActivity);
+        progressDialog.setTitle("Images Uploading...");
+        progressDialog.show();
+        // imagesUploadRef = FirebaseStorage.getInstance();
         for (Uri uri : mSelectedUriList) {
-            StorageReference reference = imagesUploadRef.child(new File(uri.getLastPathSegment()).getName());
-            mUploadTask = reference.putFile(uri);
+            // Uri file = Uri.fromFile(new File(uri.getLastPathSegment()));
+            StorageReference storageReference = FirebaseStorage.getInstance()
+                    .getReference("HostelImages")
+                    .child(new File(uri.getLastPathSegment()).getName());
+
+            mUploadTask = storageReference.putFile(uri);
             Task<Uri> urlTask = mUploadTask.continueWithTask(task -> {
                 if (!task.isSuccessful())
                     throw task.getException();
-                return imagesUploadRef.getDownloadUrl();
+                return storageReference.getDownloadUrl();
             }).addOnCompleteListener(task -> {
                 if (task.isSuccessful()) {
                     Uri downloadUri = task.getResult();
+                    progressDialog.dismiss();
                     imagesUrlList.add(new Hostel.HostelImages(downloadUri.getPath()));
+                    if (imagesUrlList.size() == mSelectedUriList.size()) {
+                        addHostelToDb();
+                    }
+
                 } else {
                     Log.d(TAG, "Error");
                 }
+            }).addOnFailureListener(e -> {
+                Toast.makeText(mActivity, e.getMessage(), Toast.LENGTH_SHORT).show();
+                Log.d(TAG, e.getMessage());
+                progressDialog.dismiss();
             });
         }
+
     }
 
     private void addHostelToDb() {
@@ -304,10 +327,10 @@ public class AddHostelFragment extends Fragment implements CompoundButton.OnChec
         DatabaseReference dbRef = FirebaseDatabase.getInstance().getReference(AppConstant.HOSTEL);
         String firebaseUID = dbRef.push().getKey();
 
-      /*  Hostel hostel = new Hostel(firebaseUID,
+        Hostel hostel = new Hostel(firebaseUID,
                 etName.getText().toString().trim(),
-                mHostelPickedAddress.getFormattedAddress(),
-                mHostelPickedAddress.getLocality(),
+                addressBuilder.toString(),
+                city,
                 mHostelPickedAddress.getLatitude() + "," + mHostelPickedAddress.getLongitude(),
                 etHostelPhone.getText().toString().trim(),
                 facilitiesBuilder.toString(),
@@ -319,17 +342,43 @@ public class AddHostelFragment extends Fragment implements CompoundButton.OnChec
         dbRef.child(firebaseUID).setValue(hostel).addOnCompleteListener(task -> {
             if (task.isSuccessful()) {
                 Toast.makeText(mActivity, "Hostel is added!", Toast.LENGTH_SHORT).show();
+                UtilClass.loadFragment(new AdminHomeFragment(), mActivity, R.id.admin_frame_layout);
             }
-        });*/
+        });
     }
+
+    private AddressData mHostelPickedAddress;
+    private StringBuilder addressBuilder;
 
     @Override
     public void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         if (resultCode == Activity.RESULT_OK && data != null) {
-            if (requestCode == REQUEST_PLACE_PICKER) {
-                //mHostelPickedAddress = (VanillaAddress) data.getSerializableExtra(KeyUtils.SELECTED_PLACE);
+            if (requestCode == Constants.PLACE_PICKER_REQUEST) {
+                mHostelPickedAddress = data.getParcelableExtra(Constants.ADDRESS_INTENT);
+
+                getAddressFromPickedAddress(mHostelPickedAddress);
             }
+        }
+
+    }
+
+    private String city;
+
+    private void getAddressFromPickedAddress(AddressData mHostelPickedAddress) {
+        Geocoder geocoder = new Geocoder(mActivity, Locale.getDefault());
+        try {
+            List<Address> addressList = geocoder.getFromLocation(mHostelPickedAddress.getLatitude(), mHostelPickedAddress.getLongitude(), 1);
+            addressBuilder = new StringBuilder();
+            if (addressList != null && addressList.size() > 0) {
+                Address address = addressList.get(0);
+                addressBuilder.append(address.getAddressLine(0));
+                city = address.getLocality();
+                txtLocationPicker.setText(addressBuilder.toString());
+            }
+
+        } catch (IOException e) {
+            e.printStackTrace();
         }
     }
 

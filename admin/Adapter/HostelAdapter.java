@@ -12,6 +12,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.bumptech.glide.Glide;
 import com.example.hostelrecommendationsystem.R;
 import com.example.hostelrecommendationsystem.admin.model.Hostel;
+import com.example.hostelrecommendationsystem.utils.AppConstant;
 
 import java.util.List;
 
@@ -37,7 +38,7 @@ public class HostelAdapter extends RecyclerView.Adapter<HostelAdapter.HostelView
 
     @Override
     public void onBindViewHolder(@NonNull HostelViewHolder holder, int position) {
-        Hostel hostel = mHostelList.get(0);
+        Hostel hostel = mHostelList.get(position);
         holder.setData(hostel);
     }
 
@@ -63,7 +64,7 @@ public class HostelAdapter extends RecyclerView.Adapter<HostelAdapter.HostelView
         }
 
         public void setData(Hostel hostel) {
-            Glide.with(mContext).load(hostel.getmHostelImages().get(0).getImageUrl()).into(imgHostel);
+            Glide.with(mContext).load(AppConstant.FIREBASE_IMAGE_URL+hostel.getmHostelImages().get(0).getImageUrl()).into(imgHostel);
             txtHostelName.setText(hostel.getHostelName());
             txtPhone.setText(hostel.getContactNo());
             txtAddress.setText(hostel.getAddress());
