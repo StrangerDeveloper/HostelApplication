@@ -12,4 +12,6 @@ public interface ISharedPrefHelper {
 
     void clearPreferences();
 
+    String getFilterData();
+    void setFilterData(String filterData);
 }

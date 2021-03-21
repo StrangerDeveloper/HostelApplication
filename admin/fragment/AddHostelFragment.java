@@ -35,6 +35,7 @@ import com.example.hostelrecommendationsystem.utils.UtilClass;
 import com.google.android.gms.tasks.Task;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
+import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.storage.FirebaseStorage;
@@ -83,7 +84,7 @@ public class AddHostelFragment extends Fragment implements CompoundButton.OnChec
 
     private Button btnAddHostel;
     private ImageView imgHostel;
-   // private VanillaAddress mHostelPickedAddress;
+    // private VanillaAddress mHostelPickedAddress;
 
     private InputValidator mInputValidator;
 
@@ -206,11 +207,11 @@ public class AddHostelFragment extends Fragment implements CompoundButton.OnChec
                     .setAddressRequired(true) // Set If return only Coordinates if cannot fetch Address for the coordinates. Default: True
                     .hideMarkerShadow(true) // Hides the shadow under the map marker. Default: False
                     //.setMarkerDrawable(R.drawable.marker) // Change the default Marker Image
-                    .setMarkerImageImageColor(R.color.colorPrimary)
-                    .setFabColor(R.color.colorPrimaryDark)
+                    .setMarkerImageImageColor(R.color.purple_500)
+                    .setFabColor(R.color.purple_500)
                     .setPrimaryTextColor(R.color.colorWhite) // Change text color of Shortened Address
-                    .setSecondaryTextColor(R.color.colorBlack) // Change text color of full Address
-                    .setBottomViewColor(R.color.colorPrimary) // Change Address View Background Color (Default: White)
+                    .setSecondaryTextColor(R.color.colorWhite) // Change text color of full Address
+                    .setBottomViewColor(R.color.purple_500) // Change Address View Background Color (Default: White)
                     // .setMapRawResourceStyle(R.raw.map_style)  //Set Map Style (https://mapstyle.withgoogle.com/)
                     .setMapType(MapType.NORMAL)
                     .setPlaceSearchBar(true, getString(R.string.map_api_key)) //Activate GooglePlace Search Bar. Default is false/not activated. SearchBar is a chargeable feature by Google
@@ -323,14 +324,13 @@ public class AddHostelFragment extends Fragment implements CompoundButton.OnChec
             roomTypeBuilder.append("");
         }
 
-
         DatabaseReference dbRef = FirebaseDatabase.getInstance().getReference(AppConstant.HOSTEL);
         String firebaseUID = dbRef.push().getKey();
 
         Hostel hostel = new Hostel(firebaseUID,
                 etName.getText().toString().trim(),
                 addressBuilder.toString(),
-                city,
+                city, FirebaseAuth.getInstance().getUid(),
                 mHostelPickedAddress.getLatitude() + "," + mHostelPickedAddress.getLongitude(),
                 etHostelPhone.getText().toString().trim(),
                 facilitiesBuilder.toString(),

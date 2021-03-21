@@ -144,13 +144,15 @@ public class LoginFragment extends Fragment {
                     if (Objects.equals(snap.child("email").getValue(), email)
                             && Objects.equals(snap.child("password").getValue(), password)) {
                         UserResponse userResponse = snap.getValue(UserResponse.class);
-                      //  navigateToActivity(UserHomeActivity.class);
+                        //  navigateToActivity(UserHomeActivity.class);
 
                         if (userResponse != null) {
                             SharedPrefHelper.getmHelper().setUserResponse(new Gson().toJson(userResponse));
+                            SharedPrefHelper.getmHelper().setFilterData(mActivity.getResources().getString(R.string.search_for_hostel_by_city));
                             navigateToActivity(UserHomeActivity.class);
                         } else {
                             Toast.makeText(mActivity, "User is a not registered!", Toast.LENGTH_SHORT).show();
+                            dialog.dismiss();
                         }
                     }
                 }
@@ -182,6 +184,7 @@ public class LoginFragment extends Fragment {
                             navigateToActivity(AdminHomeActivity.class);
                         } else {
                             Toast.makeText(mActivity, "Admin is a not registered!", Toast.LENGTH_SHORT).show();
+                            dialog.dismiss();
                         }
                     }
                 }
@@ -199,13 +202,15 @@ public class LoginFragment extends Fragment {
         Intent intent = new Intent(mActivity, activity);
         intent.putExtra("type", type);
         mActivity.startActivity(intent);
-
+        dialog.dismiss();
         mActivity.finish();
+
     }
 
     @Override
     public void onDestroy() {
         super.onDestroy();
-        dialog.dismiss();
+        if (dialog != null)
+            dialog.dismiss();
     }
 }

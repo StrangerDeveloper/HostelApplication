@@ -10,9 +10,10 @@ public class SharedPrefHelper implements ISharedPrefHelper {
     private static final String PREF_NAME = "PREF_NAME";
     private static final String PREF_ADMIN_RESPONSE = "PREF_ADMIN_RESPONSE";
     private static final String PREF_USER_RESPONSE = "PREF_USER_RESPONSE";
+    private static final String PREF_USER_FILTER = "PREF_USER_FILTER";
 
     public static SharedPrefHelper mHelper;
-    private SharedPreferences mPreferences;
+    private final SharedPreferences mPreferences;
 
     public SharedPrefHelper() {
         mPreferences = AppContext.getmContext().getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE);
@@ -48,5 +49,15 @@ public class SharedPrefHelper implements ISharedPrefHelper {
     @Override
     public void clearPreferences() {
         mPreferences.edit().clear().apply();
+    }
+
+    @Override
+    public String getFilterData() {
+        return mPreferences.getString(PREF_USER_FILTER, null);
+    }
+
+    @Override
+    public void setFilterData(String filterData) {
+        mPreferences.edit().putString(PREF_USER_FILTER, filterData).apply();
     }
 }

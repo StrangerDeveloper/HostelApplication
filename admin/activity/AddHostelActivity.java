@@ -23,9 +23,13 @@ import androidx.core.app.ActivityCompat;
 
 import com.bumptech.glide.Glide;
 import com.example.hostelrecommendationsystem.R;
+import com.example.hostelrecommendationsystem.admin.fragment.AdminHomeFragment;
+import com.example.hostelrecommendationsystem.admin.model.AdminResponse;
 import com.example.hostelrecommendationsystem.admin.model.Hostel;
 import com.example.hostelrecommendationsystem.utils.AppConstant;
 import com.example.hostelrecommendationsystem.utils.InputValidator;
+import com.example.hostelrecommendationsystem.utils.UtilClass;
+import com.example.hostelrecommendationsystem.utils.sharedPref.SharedPrefHelper;
 import com.google.android.gms.tasks.Task;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
@@ -34,6 +38,7 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
+import com.google.gson.Gson;
 import com.sucho.placepicker.AddressData;
 import com.sucho.placepicker.Constants;
 import com.sucho.placepicker.MapType;
@@ -312,26 +317,32 @@ public class AddHostelActivity extends AppCompatActivity implements CompoundButt
         }
 
 
-        DatabaseReference dbRef = FirebaseDatabase.getInstance().getReference(AppConstant.HOSTEL);
-        String firebaseUID = dbRef.push().getKey();
+        if (SharedPrefHelper.getmHelper().getAdminResponse() != null) {
+            String adminId = new Gson().fromJson(SharedPrefHelper.getmHelper().getAdminResponse(), AdminResponse.class).getId();
 
-        Hostel hostel = new Hostel(firebaseUID,
-                etName.getText().toString().trim(),
-                addressBuilder.toString(),
-                city,
-                mHostelPickedAddress.getLatitude() + "," + mHostelPickedAddress.getLongitude(),
-                etHostelPhone.getText().toString().trim(),
-                facilitiesBuilder.toString(),
-                etHostelRooms.getText().toString(),
-                roomTypeBuilder.toString(),
-                etPerRoomPrice.getText().toString(),
-                imagesUrlList);
 
-        dbRef.child(firebaseUID).setValue(hostel).addOnCompleteListener(task -> {
-            if (task.isSuccessful()) {
-                Toast.makeText(this, "Hostel is added!", Toast.LENGTH_SHORT).show();
-            }
-        });
+            DatabaseReference dbRef = FirebaseDatabase.getInstance().getReference(AppConstant.HOSTEL);
+            String firebaseUID = dbRef.push().getKey();
+
+            Hostel hostel = new Hostel(firebaseUID,
+                    etName.getText().toString().trim(),
+                    addressBuilder.toString(),
+                    city, adminId,
+                    mHostelPickedAddress.getLatitude() + "," + mHostelPickedAddress.getLongitude(),
+                    etHostelPhone.getText().toString().trim(),
+                    facilitiesBuilder.toString(),
+                    etHostelRooms.getText().toString(),
+                    roomTypeBuilder.toString(),
+                    etPerRoomPrice.getText().toString(),
+                    imagesUrlList);
+
+            dbRef.child(firebaseUID).setValue(hostel).addOnCompleteListener(task -> {
+                if (task.isSuccessful()) {
+                    Toast.makeText(this, "Hostel is added!", Toast.LENGTH_SHORT).show();
+                    UtilClass.loadFragment(new AdminHomeFragment(), this, R.id.admin_frame_layout);
+                }
+            });
+        }
     }
 
     private AddressData mHostelPickedAddress;

@@ -3,14 +3,14 @@ package com.example.hostelrecommendationsystem.admin.model;
 import java.util.List;
 
 public class Hostel {
-    private String uID, hostelName, address, location, contactNo, city;
+    private String uID, hostelName, address, location, contactNo, city, adminId;
     private String facilities, totalRooms, roomType, pricePerSeat;
     private List<HostelImages> mHostelImages;
 
     public Hostel() {
     }
 
-    public Hostel(String uID, String hostelName, String address, String city,
+    public Hostel(String uID, String hostelName, String address, String city, String adminId,
                   String location, String contactNo, String facilities,
                   String totalRooms, String roomType, String pricePerSeat,
                   List<HostelImages> mHostelImages) {
@@ -20,6 +20,7 @@ public class Hostel {
         this.location = location;
         this.contactNo = contactNo;
         this.city = city;
+        this.adminId = adminId;
         this.facilities = facilities;
         this.totalRooms = totalRooms;
         this.roomType = roomType;
@@ -29,6 +30,10 @@ public class Hostel {
 
     public String getuID() {
         return uID;
+    }
+
+    public String getAdminId() {
+        return adminId;
     }
 
     public String getHostelName() {
@@ -84,5 +89,23 @@ public class Hostel {
         public String getImageUrl() {
             return imageUrl;
         }
+    }
+
+    @Override
+    public String toString() {
+        return "Hostel{" +
+                "uID='" + uID + '\'' +
+                ", hostelName='" + hostelName + '\'' +
+                ", address='" + address + '\'' +
+                ", location='" + location + '\'' +
+                ", contactNo='" + contactNo + '\'' +
+                ", city='" + city + '\'' +
+                ", adminId='" + adminId + '\'' +
+                ", facilities='" + facilities + '\'' +
+                ", totalRooms='" + totalRooms + '\'' +
+                ", roomType='" + roomType + '\'' +
+                ", pricePerSeat='" + pricePerSeat + '\'' +
+                ", mHostelImages=" + mHostelImages +
+                '}';
     }
 }
